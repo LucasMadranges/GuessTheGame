@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import '../../data/remote/post_api.dart';
 import '../../data/remote/post_dto.dart';
 import '../../domain/usecases/get_blog_posts.dart';
+import 'blog_post_page.dart';
 
 class BlogPage extends StatefulWidget {
-  final GetBlogPosts? getBlogPosts; // compatibilité
+  final GetBlogPosts? getBlogPosts;
+
   const BlogPage({super.key, this.getBlogPosts});
 
   @override
@@ -91,41 +93,53 @@ class _BlogPageState extends State<BlogPage> {
             padding: const EdgeInsets.all(12),
             itemCount: posts.length,
             separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final p = posts[index];
-              final d = p.publishedAt.toLocal();
-              final yyyy = d.year.toString().padLeft(4, '0');
-              final mm = d.month.toString().padLeft(2, '0');
-              final dd = d.day.toString().padLeft(2, '0');
-
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        p.title,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(p.content),
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: Text(
-                          '$yyyy-$mm-$dd',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
+            itemBuilder: (context, index) => BlogPageItem(post: posts[index]),
           ),
         );
       },
+    );
+  }
+}
+
+class BlogPageItem extends StatelessWidget {
+  final PostDto post;
+
+  const BlogPageItem({super.key, required this.post});
+
+  @override
+  Widget build(BuildContext context) {
+    final d = post.publishedAt.toLocal();
+    final yyyy = d.year.toString().padLeft(4, '0');
+    final mm = d.month.toString().padLeft(2, '0');
+    final dd = d.day.toString().padLeft(2, '0');
+
+    return Card(
+      child: InkWell(
+        onTap: () {
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => BlogPostPage(post: post)));
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(post.title, style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 8),
+              Text(post.content, maxLines: 3, overflow: TextOverflow.ellipsis),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Text(
+                  '$yyyy-$mm-$dd',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

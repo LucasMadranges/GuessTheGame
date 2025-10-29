@@ -1,8 +1,8 @@
-// JavaScript
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const db = require("./db");
+const {seedPostsIfEmpty} = require("./seed_posts");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -53,9 +53,9 @@ app.delete("/items/:id", (req, res) => {
                        .json({error: "Not found"});
     res.status(204)
        .send();
-});
 
-/* Posts (blog) */
+    /* Posts (blog) */
+});
 app.get("/posts", (_req, res) => res.json(db.listPosts()));
 app.get("/posts/:id", (req, res) => {
     const post = db.getPost(Number(req.params.id));
@@ -116,6 +116,9 @@ app.delete("/posts/:id", (req, res) => {
 
 app.use((_req, res) => res.status(404)
                           .json({error: "Route inconnue"}));
+
+// Seed au démarrage (idempotent)
+seedPostsIfEmpty();
 
 app.listen(PORT, () => {
     console.log(`API démarrée sur http://localhost:${PORT} - DB: ${process.env.DB_PATH || "data/data.db"}`);

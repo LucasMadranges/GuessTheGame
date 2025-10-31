@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 
 import '../../domain/usecases/add_message.dart';
 import '../viewmodels/send_message_view_model.dart';
@@ -34,18 +35,19 @@ class _SendMessagePageState extends State<SendMessagePage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
     final form = _Form(
       authorController: authorController,
       contentController: contentController,
       sending: vm.sending,
       onSend: () async {
+        final messenger = ScaffoldMessenger.of(context);
         await vm.send(authorController.text, contentController.text);
         if (vm.success) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Message envoyé')));
           authorController.clear();
           contentController.clear();
+          messenger.showSnackBar(SnackBar(content: Text(t.messageSent)));
         }
       },
       error: vm.error,
@@ -77,26 +79,31 @@ class _Form extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         TextField(
           controller: authorController,
-          decoration: const InputDecoration(labelText: 'Auteur', prefixIcon: Icon(Icons.person)),
+          decoration: InputDecoration(labelText: t.author, prefixIcon: const Icon(Icons.person)),
         ),
         const SizedBox(height: 12),
         TextField(
           controller: contentController,
-          decoration: const InputDecoration(labelText: 'Message', prefixIcon: Icon(Icons.message)),
+          decoration: InputDecoration(labelText: t.message, prefixIcon: const Icon(Icons.message)),
           maxLines: 4,
         ),
         const SizedBox(height: 12),
-        if (error != null) Text(error!, style: const TextStyle(color: Colors.red)),
+        if (error != null)
+          Text(
+            error == SendMessageViewModel.errorRequiredKey ? t.errorRequiredFields : error!,
+            style: const TextStyle(color: Colors.red),
+          ),
         const SizedBox(height: 8),
         FilledButton.icon(
           onPressed: sending ? null : onSend,
           icon: sending ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : const Icon(Icons.send),
-          label: Text(sending ? 'Envoi en cours...' : 'Envoyer'),
+          label: Text(sending ? t.sending : t.send),
         ),
       ],
     );
@@ -106,12 +113,11 @@ class _Form extends StatelessWidget {
 class _Tips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return const Card(
+    final t = AppLocalizations.of(context)!;
+    return Card(
       child: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Text(
-          'Astuce: une erreur d\'envoi est simulée aléatoirement pour tester la gestion des erreurs. Réessayez si nécessaire.',
-        ),
+        padding: const EdgeInsets.all(16.0),
+        child: Text(t.sendTip),
       ),
     );
   }

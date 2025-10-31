@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 
 import '../../data/remote/post_api.dart';
 import '../../data/remote/post_dto.dart';
 import '../../domain/usecases/get_blog_posts.dart';
+import '../../domain/entities/blog_post.dart';
 import 'blog_post_page.dart';
 
 class BlogPage extends StatefulWidget {
@@ -15,35 +17,46 @@ class BlogPage extends StatefulWidget {
 }
 
 class _BlogPageState extends State<BlogPage> {
-  final PostsApi _api = PostsApi();
-  Future<List<PostDto>>? _future;
+  Future<List<BlogPost>>? _future;
 
   @override
   void initState() {
     super.initState();
-    _future = _api.listPosts();
+    _future = _load();
+  }
+
+  Future<List<BlogPost>> _load() async {
+    if (widget.getBlogPosts != null) {
+      return widget.getBlogPosts!();
+    }
+    // Fallback direct API (dev only)
+    final api = PostsApi();
+    final list = await api.listPosts();
+    api.close();
+    return list
+        .map((e) => BlogPost(
+              id: e.id.toString(),
+              title: e.title,
+              body: e.content,
+              publishedAt: e.publishedAt,
+            ))
+        .toList();
   }
 
   Future<void> _reload() async {
     setState(() {
-      _future = _api.listPosts();
+      _future = _load();
     });
     await _future;
   }
 
   @override
-  void dispose() {
-    _api.close();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<PostDto>>(
+    final t = AppLocalizations.of(context)!;
+    return FutureBuilder<List<BlogPost>>(
       future: _future,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting ||
-            _future == null) {
+        if (snapshot.connectionState == ConnectionState.waiting || _future == null) {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
@@ -52,36 +65,27 @@ class _BlogPageState extends State<BlogPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Erreur lors du chargement du blog',
+                  t.blogLoadErrorTitle,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  '${snapshot.error}',
-                  style: const TextStyle(color: Colors.red),
-                ),
+                Text('${snapshot.error}', style: const TextStyle(color: Colors.red)),
                 const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: _reload,
-                  child: const Text('Réessayer'),
-                ),
+                ElevatedButton(onPressed: _reload, child: Text(t.retry)),
               ],
             ),
           );
         }
 
-        final posts = snapshot.data ?? const <PostDto>[];
+        final posts = snapshot.data ?? const <BlogPost>[];
         if (posts.isEmpty) {
           return Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('Aucun article'),
+                Text(t.noArticle),
                 const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: _reload,
-                  child: const Text('Rafraîchir'),
-                ),
+                ElevatedButton(onPressed: _reload, child: Text(t.refresh)),
               ],
             ),
           );
@@ -102,7 +106,7 @@ class _BlogPageState extends State<BlogPage> {
 }
 
 class BlogPageItem extends StatelessWidget {
-  final PostDto post;
+  final BlogPost post;
 
   const BlogPageItem({super.key, required this.post});
 
@@ -116,9 +120,9 @@ class BlogPageItem extends StatelessWidget {
     return Card(
       child: InkWell(
         onTap: () {
-          Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (_) => BlogPostPage(post: post)));
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => BlogPostPage(post: _toDto(post))),
+          );
         },
         child: Padding(
           padding: const EdgeInsets.all(12.0),
@@ -127,14 +131,11 @@ class BlogPageItem extends StatelessWidget {
             children: [
               Text(post.title, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 8),
-              Text(post.content, maxLines: 3, overflow: TextOverflow.ellipsis),
+              Text(post.body, maxLines: 3, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 8),
               Align(
                 alignment: Alignment.bottomRight,
-                child: Text(
-                  '$yyyy-$mm-$dd',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+                child: Text('$yyyy-$mm-$dd', style: Theme.of(context).textTheme.bodySmall),
               ),
             ],
           ),
@@ -142,4 +143,14 @@ class BlogPageItem extends StatelessWidget {
       ),
     );
   }
+
+  // petit adaptateur pour réutiliser BlogPostPage qui attend un PostDto
+  PostDto _toDto(BlogPost p) => PostDto(
+        id: int.tryParse(p.id) ?? 0,
+        title: p.title,
+        content: p.body,
+        author: '',
+        publishedAt: p.publishedAt,
+        updatedAt: p.publishedAt,
+      );
 }

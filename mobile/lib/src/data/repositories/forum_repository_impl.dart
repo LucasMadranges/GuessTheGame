@@ -16,17 +16,13 @@ class ForumRepositoryImpl implements ForumRepository {
   }
 
   @override
-  Future<Message> addMessage(Message message) async {
-    // Adapter le mapping selon votre entité Message.
-    // Ici, on envoie le contenu dans `name` et, si présent, un détail dans `description`.
-    final created = await _api.createItem(
+  Future<void> addMessage(Message message) async {
+    await _api.createItem(
       name: _messagePrimaryText(message),
       description: _messageSecondaryText(message),
     );
-    return _toMessage(created);
   }
 
-  @override
   Future<List<Message>> searchMessages(String query) async {
     final q = query.toLowerCase();
     final all = await getMessages();

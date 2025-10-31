@@ -1,0 +1,32 @@
+{
+  "appTitle": "Forum Mobile",
+  "forumApp": "Forum App",
+  "navMessages": "Messages",
+  "navSend": "Envoyer",
+  "navBlog": "Blog",
+
+  "loading": "Chargement...",
+  "retry": "Réessayer",
+
+  "messagesLoadErrorTitle": "Erreur lors du chargement des messages",
+  "noMessage": "Aucun message",
+  "search": "Recherche",
+  "filterByAuthor": "Filtrer par auteur",
+  "reset": "Réinitialiser",
+
+  "author": "Auteur",
+  "message": "Message",
+  "sending": "Envoi en cours...",
+  "send": "Envoyer",
+  "messageSent": "Message envoyé",
+  "sendTip": "Astuce: une erreur d'envoi est simulée aléatoirement pour tester la gestion des erreurs. Réessayez si nécessaire.",
+  "errorRequiredFields": "Auteur et message requis",
+
+  "blogLoadErrorTitle": "Erreur lors du chargement du blog",
+  "noArticle": "Aucun article",
+  "refresh": "Rafraîchir",
+
+  "language": "Langue",
+  "languageEnglish": "Anglais",
+  "languageFrench": "Français"
+}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/l10n/app_localizations.dart';
 
 import '../../domain/entities/message.dart';
 import '../../domain/usecases/get_messages.dart';
@@ -38,6 +39,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     if (vm.loading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -46,11 +48,11 @@ class _MessagesPageState extends State<MessagesPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Erreur lors du chargement des messages', style: Theme.of(context).textTheme.titleMedium),
+            Text(t.messagesLoadErrorTitle, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             Text(vm.error!, style: const TextStyle(color: Colors.red)),
             const SizedBox(height: 12),
-            ElevatedButton(onPressed: vm.load, child: const Text('Réessayer')),
+            ElevatedButton(onPressed: vm.load, child: Text(t.retry)),
           ],
         ),
       );
@@ -101,18 +103,19 @@ class _Filters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         TextField(
           controller: queryController,
-          decoration: const InputDecoration(labelText: 'Recherche', prefixIcon: Icon(Icons.search)),
+          decoration: InputDecoration(labelText: t.search, prefixIcon: const Icon(Icons.search)),
           onChanged: onQueryChanged,
         ),
         const SizedBox(height: 8),
         TextField(
           controller: authorController,
-          decoration: const InputDecoration(labelText: 'Filtrer par auteur', prefixIcon: Icon(Icons.person_search)),
+          decoration: InputDecoration(labelText: t.filterByAuthor, prefixIcon: const Icon(Icons.person_search)),
           onChanged: onAuthorChanged,
         ),
         const SizedBox(height: 8),
@@ -124,7 +127,7 @@ class _Filters extends StatelessWidget {
             onAuthorChanged('');
           },
           icon: const Icon(Icons.filter_alt_off),
-          label: const Text('Réinitialiser'),
+          label: Text(t.reset),
         )
       ],
     );
@@ -137,17 +140,28 @@ class _MessagesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     if (messages.isEmpty) {
-      return const Center(child: Text('Aucun message'));
+      return Center(child: Text(t.noMessage));
     }
     return ListView.separated(
       itemCount: messages.length,
       separatorBuilder: (_, __) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final m = messages[index];
+        final isPending = (context.findAncestorStateOfType<_MessagesPageState>()?.vm.pendingIds.contains(m.id) ?? false);
         return ListTile(
           leading: const CircleAvatar(child: Icon(Icons.person)),
-          title: Text(m.author),
+          title: Row(
+            children: [
+              Expanded(child: Text(m.author)),
+              if (isPending)
+                Padding(
+                  padding: const EdgeInsets.only(left: 6.0),
+                  child: Icon(Icons.schedule, size: 16, color: Colors.orangeAccent),
+                ),
+            ],
+          ),
           subtitle: Text(m.content),
           trailing: Text(_formatDate(m.createdAt), style: Theme.of(context).textTheme.bodySmall),
         );

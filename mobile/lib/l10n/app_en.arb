@@ -1,0 +1,32 @@
+{
+  "appTitle": "Forum Mobile",
+  "forumApp": "Forum App",
+  "navMessages": "Messages",
+  "navSend": "Send",
+  "navBlog": "Blog",
+
+  "loading": "Loading...",
+  "retry": "Retry",
+
+  "messagesLoadErrorTitle": "Error loading messages",
+  "noMessage": "No message",
+  "search": "Search",
+  "filterByAuthor": "Filter by author",
+  "reset": "Reset",
+
+  "author": "Author",
+  "message": "Message",
+  "sending": "Sending...",
+  "send": "Send",
+  "messageSent": "Message sent",
+  "sendTip": "Tip: a send error is randomly simulated to test error handling. Try again if necessary.",
+  "errorRequiredFields": "Author and message are required",
+
+  "blogLoadErrorTitle": "Error loading blog",
+  "noArticle": "No article",
+  "refresh": "Refresh",
+
+  "language": "Language",
+  "languageEnglish": "English",
+  "languageFrench": "French"
+}

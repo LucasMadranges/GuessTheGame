@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../../domain/entities/message.dart';
 import '../../domain/usecases/get_messages.dart';
 import '../../domain/usecases/search_messages.dart';
+import '../../data/repositories/offline_forum_repository.dart';
 
 class MessagesViewModel extends ChangeNotifier {
   final GetMessages _getMessages;
@@ -15,6 +16,7 @@ class MessagesViewModel extends ChangeNotifier {
   String? error;
   String query = '';
   String authorFilter = '';
+  Set<String> pendingIds = {};
 
   Future<void> load() async {
     loading = true;
@@ -22,12 +24,27 @@ class MessagesViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       _all = await _getMessages();
+      // Essayer d’obtenir les IDs en attente si le repo offline est utilisé
+      await _loadPendingIds();
       _apply();
     } catch (e) {
       error = e.toString();
     } finally {
       loading = false;
       notifyListeners();
+    }
+  }
+
+  Future<void> _loadPendingIds() async {
+    try {
+      final repo = _getMessages.repository;
+      if (repo is OfflineForumRepository) {
+        pendingIds = await repo.getPendingIds();
+      } else {
+        pendingIds = {};
+      }
+    } catch (_) {
+      pendingIds = {};
     }
   }
 

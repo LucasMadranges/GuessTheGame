@@ -12,9 +12,11 @@ class SendMessageViewModel extends ChangeNotifier {
   String? error;
   bool success = false;
 
+  static const String errorRequiredKey = 'errorRequiredFields';
+
   Future<void> send(String author, String content) async {
     if (author.trim().isEmpty || content.trim().isEmpty) {
-      error = 'Auteur et message requis';
+      error = errorRequiredKey;
       notifyListeners();
       return;
     }
